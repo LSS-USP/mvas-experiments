@@ -31,3 +31,4 @@
 # Others
 bin/
 obj/
+*.csv
