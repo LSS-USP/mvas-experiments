@@ -11,6 +11,8 @@ TARGETS := bin/serial
 CC := gcc
 CCFLAGS := -Wall
 INCLUDES := -I./$(INCDIR)/
+#DEBUG := -D_DEBUG_
+DEBUG :=
 
 # Files to process
 SRCFILES := $(shell find -name '*.c' -printf '%P ')
@@ -19,10 +21,10 @@ OBJFILES := $(basename $(subst $(SRCDIR),$(OBJDIR),$(SRCFILES)))
 all: prepare $(TARGETS)
 
 $(TARGETS): $(OBJFILES:%=%.o)
-	$(CC) $(CCFLAGS) $^ -o $@
+	$(CC) $(CCFLAGS) $^ -o $@ $(DEBUG)
 
 $(OBJDIR)/%.o: $(basename $(subst $(OBJDIR),$(SRCDIR),$(OBJDIR)/%.o)).c
-	$(CC) -o $@ -c $< $(INCLUDES) $(CCFLAGS)
+	$(CC) -o $@ -c $< $(INCLUDES) $(CCFLAGS) $(DEBUG)
 
 .PHONY: clean, prepare
 

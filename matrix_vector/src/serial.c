@@ -6,43 +6,45 @@
 
 int main(int argc, char * argv[])
 {
-  if (argc > 2)
+  if (argc != 2)
   {
     printf("Error in the program execution\n");
     return -1;
   }
 
   int matrixCase = atoi(argv[1]);
-  int matrixBase = 10;
-  switch(matrixCase)
-  {
-    case CASE_10_5:
-      matrixBase = 10;
-    break;
-    case CASE_100_20:
-      matrixBase = 100;
-    break;
-    case CASE_1000_40:
-      matrixBase = 1000;
-    break;
-    case CASE_10000_80:
-      matrixBase = 10000;
-    default:
-      printf("Invalid option\n");
-      return -1;
-    break;
-  }
+  int matrixBase = option(matrixCase);
 
   long * matrix = matrixGenerate(matrixBase, matrixBase);
+  if (!matrix)
+  {
+    printf("Error on matrix allocation\n");
+    return -1;
+  }
+
   long * vector = matrixGenerate(matrixBase, 1);
+  if (!vector)
+  {
+    printf("Error on vector allocation\n");
+    free(matrix);
+    return -1;
+  }
   long * finalVector = (long*)calloc(matrixBase, sizeof(long));
+  if (!finalVector)
+  {
+    printf("Error on final vector allocation\n");
+    free(matrix);
+    free(vector);
+    return -1;
+  }
+
   int lines = matrixBase;
   int columns = matrixBase;
 
   clock_t begin, end;
   double elapsed = 0;
-  begin = clock();
 
+  begin = clock();
   for (int line = 0; line < lines; line++)
   {
     finalVector[line] = 0.0;
@@ -53,11 +55,17 @@ int main(int argc, char * argv[])
   }
   end = clock();
 
+  #ifdef _DEBUG_
   printf("Matrix\n");
+  #endif
   writeMatrixToFile("matrix.csv", matrix, lines, columns);
+  #ifdef _DEBUG_
   printf("Vector\n");
+  #endif
   writeMatrixToFile("vector.csv", vector, 1, columns);
+  #ifdef _DEBUG_
   printf("Result\n");
+  #endif
   writeMatrixToFile("result.csv", finalVector, 1, columns);
 
   free(matrix);
@@ -65,7 +73,19 @@ int main(int argc, char * argv[])
   free(finalVector);
 
   elapsed = calculateElapsedTime(begin, end);
-  printf("Total time elapsed: %f (ms)\n", elapsed);
+  printf("Elapsed time: %f (ms)\n", elapsed);
+
+  FILE * elapsedTable = fopen("elapsedTable.txt", "a+");
+  if (!elapsedTable)
+  {
+    printf("Error to save elapsed time\n");
+    return -1;
+  }
+
+  char elapsedString[BUFFER];
+  sprintf(elapsedString, "%f\n", elapsed);
+  fputs(elapsedString, elapsedTable);
+  fclose(elapsedTable);
 
   return 0;
 }
