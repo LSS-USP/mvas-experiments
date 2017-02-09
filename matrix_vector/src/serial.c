@@ -10,11 +10,11 @@ enum
   CASE_10000_80
 };
 
-int * matrixGenerate(int pLines, int pColumn)
+long * matrixGenerate(int pLines, int pColumns)
 {
-  int totalSize = pLines * pColumn;
-  int * matrix = (int *) calloc(pLines * pColumn, sizeof(int));
-  srand(time(NULL));
+  int totalSize = pLines * pColumns;
+  long * matrix = (long *) calloc(totalSize, sizeof(long));
+  srand((unsigned int)clock());
   for (int i = 0; i < totalSize; i++)
   {
     matrix[i] = rand() % 500;
@@ -25,8 +25,37 @@ int * matrixGenerate(int pLines, int pColumn)
 double calculateElapsedTime(clock_t pBegin, clock_t pEnd)
 {
   double elapsed = (((double)pEnd - pBegin) / (CLOCKS_PER_SEC));
-  printf("elapsed: %f\n", elapsed);
   return elapsed * 1000;
+}
+
+void writeMatrixToFile(char * pFileName, long * pMatrix, int pLines, int pColumns)
+{
+  FILE * saveTo = fopen(pFileName, "w+");
+  if (!saveTo)
+  {
+    printf("Error to open file\n");
+    return;
+  }
+  char number[1024];
+
+  for (int i = 0; i < pLines; i++)
+  {
+    for (int j = 0; j < pColumns; j++)
+    {
+      sprintf(number, "%ld", *(pMatrix + i*pLines + j));
+      printf("%s", number);
+      fputs(number, saveTo);
+      if (j < pColumns - 1)
+      {
+        printf(",");
+        fputc(',', saveTo);
+      }
+    }
+    fputc('\n', saveTo);
+    printf("\n");
+  }
+
+  fclose(saveTo);
 }
 
 int main(int argc, char * argv[])
@@ -53,13 +82,14 @@ int main(int argc, char * argv[])
     case CASE_10000_80:
       matrixBase = 10000;
     default:
-      matrixBase = 100;
+      printf("Invalid option\n");
+      return -1;
     break;
   }
 
-  int * matrix = matrixGenerate(matrixBase, matrixBase);
-  int * vector = matrixGenerate(matrixBase, 1);
-  int * finalVector = (int*)calloc(matrixBase, sizeof(int));
+  long * matrix = matrixGenerate(matrixBase, matrixBase);
+  long * vector = matrixGenerate(matrixBase, 1);
+  long * finalVector = (long*)calloc(matrixBase, sizeof(long));
   int lines = matrixBase;
   int columns = matrixBase;
 
@@ -75,15 +105,20 @@ int main(int argc, char * argv[])
       finalVector[line] += *((matrix + line*lines) + column) * vector[column];
     }
   }
-
   end = clock();
+
+  printf("Matrix\n");
+  writeMatrixToFile("matrix.csv", matrix, lines, columns);
+  printf("Vector\n");
+  writeMatrixToFile("vector.csv", vector, 1, columns);
+  printf("Result\n");
+  writeMatrixToFile("result.csv", finalVector, 1, columns);
+
   free(matrix);
   free(vector);
   free(finalVector);
 
   elapsed = calculateElapsedTime(begin, end);
-  printf("begin: %ld\n", (long)begin);
-  printf("end: %ld\n", (long)end);
   printf("Total time elapsed: %f (ms)\n", elapsed);
 
   return 0;
