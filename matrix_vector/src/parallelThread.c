@@ -14,7 +14,7 @@ static int gMatrixLines = 0;
 static int gColumns = 0;
 static int gLines = 0;
 
-void * matrixVector(void * pId)
+void * matrixVectorThread(void * pId)
 {
   long localId = *((long*)pId);
   int localToProcess = gMatrixLines / gTotalThreads;
@@ -32,9 +32,3 @@ void * matrixVector(void * pId)
 
   return NULL;
 }
-
-//int main(int argc, char * argv[])
-//{
-//  
-//  return 0;
-//}
