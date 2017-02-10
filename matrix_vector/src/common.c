@@ -1,8 +1,86 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 #include "common.h"
+
+void getBeginTime(dataTime * pDataTime)
+{
+  clock_gettime(CLOCK_MONOTONIC_RAW, &pDataTime->beginMonotonicRaw);
+  pDataTime->beginClock = clock();
+}
+
+void getEndTime(dataTime * pDataTime)
+{
+  clock_gettime(CLOCK_MONOTONIC_RAW, &pDataTime->endMonotonicRaw);
+  pDataTime->endClock = clock();
+}
+
+void calculateElapsedTime(dataTime * pDataTime)
+{
+  pDataTime->elapsedClock = (((double)pDataTime->endClock -
+                              pDataTime->beginClock) / (CLOCKS_PER_SEC)) *
+                              SECONDS_TO_MILLISECONDS;
+  pDataTime->elapsedMonotonicRaw =
+          (pDataTime->endMonotonicRaw.tv_sec -
+           pDataTime->beginMonotonicRaw.tv_sec ) +
+          (pDataTime->endMonotonicRaw.tv_nsec -
+          pDataTime->beginMonotonicRaw.tv_nsec)
+          / BILLION;
+}
+
+void dumpElapsedTime(const dataTime * pDataTime, char * pPrefix)
+{
+  printf("Elapsed time (MONOTONIC): %lf (s)\n", pDataTime->elapsedMonotonicRaw);
+  printf("Elapsed time (CLOCK): %lf (ms)\n", pDataTime->elapsedClock);
+  char saveTo[BUFFER];
+  char output[BUFFER];
+  strcpy(saveTo, pPrefix);
+  strcat(saveTo, "_elapsedTime.txt");
+
+  FILE * elapsedTimeFile = fopen(saveTo, "a+");
+  if (!elapsedTimeFile)
+  {
+    printf("Error to write information file\n");
+    return;
+  }
+  sprintf(output, "Elapsed time (MONOTONIC): %lf (s)\n",
+          pDataTime->elapsedMonotonicRaw);
+  fputs(output, elapsedTimeFile);
+  sprintf(output, "Elapsed time (CLOCK): %lf (ms)\n",
+          pDataTime->elapsedClock);
+  fputs(output, elapsedTimeFile);
+  fclose(elapsedTimeFile);
+}
+
+void dumpDotProductData(dotProductData * pInfo, char * pBaseName)
+{
+  char bufferName[BUFFER];
+
+  #ifdef _DEBUG_
+  printf("Matrix\n");
+  #endif
+  strcpy(bufferName, pBaseName);
+  strcat(bufferName, "_matrix.csv");
+  writeMatrixToFile(bufferName, pInfo->matrix, pInfo->lines, pInfo->columns);
+
+  #ifdef _DEBUG_
+  printf("Vector\n");
+  #endif
+
+  strcpy(bufferName, pBaseName);
+  strcat(bufferName, "_vector.csv");
+  writeMatrixToFile(bufferName, pInfo->vector, 1, pInfo->columns);
+
+  #ifdef _DEBUG_
+  printf("Result\n");
+  #endif
+
+  strcpy(bufferName, pBaseName);
+  strcat(bufferName, "_result.csv");
+  writeMatrixToFile(bufferName, pInfo->finalVector, 1, pInfo->columns);
+}
 
 dotProductData * initDotProductData(int pLines, int pColumns)
 {
@@ -45,18 +123,34 @@ int cleanDotProductData(dotProductData * pInfo)
   {
     return 0;
   }
+
   if (pInfo->matrix)
   {
+    #ifdef _DEBUG_
+    printf("Free matrix\n");
+    #endif
     free(pInfo->matrix);
   }
+
   if (pInfo->vector)
   {
+    #ifdef _DEBUG_
+    printf("Free vector\n");
+    #endif
     free(pInfo->vector);
   }
-  if (pInfo->finalVector)
-  {
-    free(pInfo->finalVector);
-  }
+
+  // XXX: WHY THIS BREAK THE CODE?
+  // if (pInfo->finalVector)
+  // {
+  //   #ifdef _DEBUG_
+  //   printf("Free final vector\n");
+  //   #endif
+  //   free(pInfo->finalVector);
+  // }
+  #ifdef _DEBUG_
+  printf("Free information\n");
+  #endif
   free(pInfo);
   return 0;
 }
@@ -83,12 +177,6 @@ long * matrixGenerate(int pLines, int pColumns)
     matrix[i] = rand() % MAX_RANGE_VALUES;
   }
   return matrix;
-}
-
-double calculateElapsedTime(clock_t pBegin, clock_t pEnd)
-{
-  double elapsed = (((double)pEnd - pBegin) / (CLOCKS_PER_SEC));
-  return elapsed * SECONDS_TO_MILLISECONDS;
 }
 
 void writeMatrixToFile(char * pFile, long * pMatrix, int pLines, int pColumns)
@@ -133,7 +221,7 @@ void writeMatrixToFile(char * pFile, long * pMatrix, int pLines, int pColumns)
   fclose(saveTo);
 }
 
-int option(int pOption)
+int optionMatrixSize(int pOption)
 {
   switch(pOption)
   {
@@ -145,6 +233,24 @@ int option(int pOption)
       return 1000;
     case CASE_10000_80:
       return 10000;
+    default:
+      return 10;
+  }
+  return -1;
+}
+
+int optionTotalThreads(int pOption)
+{
+  switch(pOption)
+  {
+    case CASE_10_5:
+      return 5;
+    case CASE_100_20:
+      return 20;
+    case CASE_1000_40:
+      return 40;
+    case CASE_10000_80:
+      return 80;
     default:
       return 10;
   }
