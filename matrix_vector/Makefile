@@ -5,11 +5,11 @@ BINDIR := bin
 OBJDIR := obj
 
 # Targets with main code inside
-TARGETS := bin/serial
+TARGETS := bin/serial bin/parallelThread
 
 # Required flags
 CC := gcc
-CCFLAGS := -Wall
+CCFLAGS := -Wall -lpthread
 INCLUDES := -I./$(INCDIR)/
 #DEBUG := -D_DEBUG_
 DEBUG :=

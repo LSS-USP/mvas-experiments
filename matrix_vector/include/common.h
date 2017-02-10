@@ -13,6 +13,31 @@ enum
   CASE_10000_80
 };
 
+typedef struct _dotProductData
+{
+  long * matrix;
+  long * vector;
+  long * finalVector;
+  int lines;
+  int columns;
+} dotProductData;
+
+/**
+* Initialize dotProductData. It allocates matrix, vector, final vector and some
+* extra informations
+* @param pLines Total of lines
+* @param pColumns Total of columns
+* @return Return a reference to allocated data structure, otherwise return NULL
+*/
+extern dotProductData * initDotProductData(int pLines, int pColumns);
+
+/**
+* Clean all previously allocated data
+* @param pInfo Reference to dotProductData allocated by initDotProductData
+* @return Return 0 in case of success, otherwise return a negative number
+*/
+extern int cleanDotProductData(dotProductData * pInfo);
+
 /**
 * Generate matrix based o number of lines and column
 * @param pLines Number of lines

@@ -4,6 +4,63 @@
 
 #include "common.h"
 
+dotProductData * initDotProductData(int pLines, int pColumns)
+{
+  dotProductData * info = (dotProductData *) calloc(1, sizeof(dotProductData));
+  if (!info)
+  {
+    printf("Error when tried to allocate dotProduct data\n");
+    return NULL;
+  }
+
+  info->matrix = matrixGenerate(pLines, pColumns);
+  if (!info->matrix)
+  {
+    printf("Error on matrix allocation\n");
+    return NULL;
+  }
+  info->vector = matrixGenerate(pLines, 1);
+  if (!info->vector)
+  {
+    printf("Error on vector allocation\n");
+    free(info->matrix);
+    return NULL;
+  }
+  info->finalVector = (long*)calloc(pLines, sizeof(long));
+  if (!info->finalVector)
+  {
+    printf("Error on final vector allocation\n");
+    free(info->matrix);
+    free(info->vector);
+    return NULL;
+  }
+  info->lines = pLines;
+  info->columns = pColumns;
+  return info;
+}
+
+int cleanDotProductData(dotProductData * pInfo)
+{
+  if (!pInfo)
+  {
+    return 0;
+  }
+  if (pInfo->matrix)
+  {
+    free(pInfo->matrix);
+  }
+  if (pInfo->vector)
+  {
+    free(pInfo->vector);
+  }
+  if (pInfo->finalVector)
+  {
+    free(pInfo->finalVector);
+  }
+  free(pInfo);
+  return 0;
+}
+
 long * matrixGenerate(int pLines, int pColumns)
 {
   if (pLines < 0 || pColumns < 0)
