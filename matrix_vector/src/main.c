@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
 #include "common.h"
 #include "serial.h"
+#include "parallelThread.h"
 
 int main(int argc, char * argv[])
 {
@@ -14,7 +14,7 @@ int main(int argc, char * argv[])
   }
 
   int matrixCase = atoi(argv[1]);
-  int matrixBase = option(matrixCase);
+  int matrixBase = optionMatrixSize(matrixCase);
 
   dotProductData * info = initDotProductData(matrixBase, matrixBase);
   if (!info)
@@ -23,42 +23,23 @@ int main(int argc, char * argv[])
     return -1;
   }
 
-  clock_t begin, end;
-  double elapsed = 0;
+  // Serial
+  printf("SERIAL\n");
+  dataTime dataTimeSerial;
+  dataTimeSerial = matrixVectorSerial(info);
+  calculateElapsedTime(&dataTimeSerial);
+  dumpDotProductData(info, "serial");
+  dumpElapsedTime(&dataTimeSerial, "serial");
 
-  begin = clock();
-  matrixVectorSerial(info);
-  end = clock();
-
-  #ifdef _DEBUG_
-  printf("Matrix\n");
-  #endif
-  writeMatrixToFile("matrix.csv", info->matrix, info->lines, info->columns);
-  #ifdef _DEBUG_
-  printf("Vector\n");
-  #endif
-  writeMatrixToFile("vector.csv", info->vector, 1, info->columns);
-  #ifdef _DEBUG_
-  printf("Result\n");
-  #endif
-  writeMatrixToFile("result.csv", info->finalVector, 1, info->columns);
-
+  //Parallel
+  printf("PARALLEL\n");
+  dataTime dataTimeParallel;
+  int totalThreads = optionTotalThreads(matrixCase);
+  dataTimeParallel = matrixVectorThread(totalThreads, info);
+  calculateElapsedTime(&dataTimeParallel);
+  dumpDotProductData(info, "parallel");
+  dumpElapsedTime(&dataTimeParallel, "parallel");
   cleanDotProductData(info);
-
-  elapsed = calculateElapsedTime(begin, end);
-  printf("Elapsed time: %f (ms)\n", elapsed);
-
-  FILE * elapsedTable = fopen("elapsedTable.txt", "a+");
-  if (!elapsedTable)
-  {
-    printf("Error to save elapsed time\n");
-    return -1;
-  }
-
-  char elapsedString[BUFFER];
-  sprintf(elapsedString, "%f\n", elapsed);
-  fputs(elapsedString, elapsedTable);
-  fclose(elapsedTable);
 
   return 0;
 }

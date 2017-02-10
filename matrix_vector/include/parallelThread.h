@@ -22,6 +22,6 @@ extern pthread_t * initThreadData(int pTotalThreads);
 * @param pTotalThreads
 * @param pInfo
 */
-extern void matrixVectorThread(int pTotalThreads, dotProductData * pInfo);
+extern dataTime matrixVectorThread(int pTotalThreads, dotProductData * pInfo);
 
 #endif

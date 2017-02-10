@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include <pthread.h>
 
@@ -28,26 +29,34 @@ pthread_t * initThreadData(int pTotalThreads)
   return threadData;
 }
 
-void matrixVectorThread(int pTotalThreads, dotProductData * pInfo)
+dataTime matrixVectorThread(int pTotalThreads, dotProductData * pInfo)
 {
+  dataTime threadTime;
   if (!pInfo || pTotalThreads < 1)
   {
     printf("Invalid parameters\n");
-    return;
+    return threadTime;
   }
-  pthread_t * threadData = initThreadData(pTotalThreads);
-  if (!threadData)
+  pthread_t * threadsData = initThreadData(pTotalThreads);
+  if (!threadsData)
   {
     printf("matrixVectorThread cannot allocate data structure\n");
-    return;
+    return threadTime;
   }
 
   int status = 0;
   infoThread = pInfo;
+  getBeginTime(&threadTime);
   for (int thread = 0; thread < gTotalThreads; thread++)
   {
-    status = pthread_create(&threadData[thread], NULL,
-                            matrixVectorKernel, (void*)&thread);
+    long * argument = malloc(sizeof(*argument));
+    if (!argument)
+    {
+      printf("Error to allocate argument\n");
+    }
+    *argument = thread;
+    status = pthread_create(&threadsData[thread], NULL,
+                            matrixVectorKernel, argument);
     if (status)
     {
       printf("Error when tried to create thread: %d\n", thread);
@@ -55,23 +64,26 @@ void matrixVectorThread(int pTotalThreads, dotProductData * pInfo)
     }
   }
 
+
   for (int thread = 0; thread < gTotalThreads; thread++)
   {
-    status = pthread_join(threadData[thread], NULL);
+    status = pthread_join(threadsData[thread], NULL);
     if (status)
     {
       printf("Error when tried to join thread: %d\n", thread);
       continue;
     }
   }
+  getEndTime(&threadTime);
 
-  free(threadData);
-  return;
+  free(threadsData);
+  return threadTime;
 }
 
 void * matrixVectorKernel(void * pId)
 {
   long localId = *((long*)pId);
+  free(pId);
   int localToProcess = infoThread->lines / gTotalThreads;
   int startLine = localId * localToProcess;
   int endLine = (localId + 1) * localToProcess - 1;
