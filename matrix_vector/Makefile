@@ -5,7 +5,7 @@ BINDIR := bin
 OBJDIR := obj
 
 # Targets with main code inside
-TARGETS := bin/serial bin/parallelThread
+TARGETS := bin/dotproduct
 
 # Required flags
 CC := gcc
