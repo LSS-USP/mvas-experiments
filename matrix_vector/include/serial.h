@@ -3,6 +3,6 @@
 
 #include "common.h"
 
-extern void matrixVectorSerial(dotProductData * pInfo);
+extern dataTime matrixVectorSerial(dotProductData * pInfo);
 
 #endif

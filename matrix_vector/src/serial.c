@@ -4,15 +4,18 @@
 #include "common.h"
 #include "serial.h"
 
-void matrixVectorSerial(dotProductData * pInfo)
+dataTime matrixVectorSerial(dotProductData * pInfo)
 {
+  dataTime serialTime;
   if (!pInfo)
   {
     printf("Invalid parameters\n");
-    return;
+    return serialTime;
   }
 
   long tmpElement = 0;
+
+  getBeginTime(&serialTime);
   for (int line = 0; line < pInfo->lines; line++)
   {
     pInfo->finalVector[line] = 0.0;
@@ -22,4 +25,6 @@ void matrixVectorSerial(dotProductData * pInfo)
       pInfo->finalVector[line] +=  tmpElement * pInfo->vector[column];
     }
   }
+  getEndTime(&serialTime);
+  return serialTime;
 }
