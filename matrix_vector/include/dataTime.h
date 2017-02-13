@@ -1,6 +1,8 @@
 #ifndef __DATA_TIME__
 #define __DATA_TIME__
 
+#include <time.h>
+
 #define DATA_TIME_BUFFER 4096
 #define SECONDS_TO_MILLISECONDS 1000
 #define BILLION 1E9
