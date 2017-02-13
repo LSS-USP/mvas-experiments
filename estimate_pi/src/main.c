@@ -3,6 +3,7 @@
 
 #include "dataTime.h"
 #include "serial.h"
+#include "parallelThread.h"
 #include "common.h"
 
 int main(int argc, char * argv[])
@@ -14,6 +15,7 @@ int main(int argc, char * argv[])
   }
 
   unsigned long totalTerms = atol(argv[1]);
+  int totalThreads = atoi(argv[2]);
   if (totalTerms <= 0)
   {
     printf("Total terms should be >= 1\n");
@@ -21,14 +23,19 @@ int main(int argc, char * argv[])
   }
 
   piData data;
-  // Serial
   data.terms = totalTerms;
+  // Serial
   dataTime serialTime;
   serialTime = estimatePiSerial(&data);
   calculateElapsedTime(&serialTime);
   dumpElapsedTime(&serialTime, "serial");
   dumpEstimatePi(&data, "serial");
   // Parallel
+  dataTime parallelTime;
+  parallelTime = estimatePiThread(totalThreads, &data);
+  calculateElapsedTime(&parallelTime);
+  dumpElapsedTime(&parallelTime, "parallel");
+  dumpEstimatePi(&data, "parallel");
 
   return 0;
 }
