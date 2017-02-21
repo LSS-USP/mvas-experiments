@@ -9,7 +9,7 @@ TARGETS := bin/estimatePi
 
 # Required flags
 CC := gcc
-CCFLAGS := -Wall -lpthread
+CCFLAGS := -Wall -lpthread -std=gnu99
 INCLUDES := -I./$(INCDIR)/
 #DEBUG := -D_DEBUG_
 DEBUG :=

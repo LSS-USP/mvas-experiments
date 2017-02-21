@@ -9,7 +9,7 @@ TARGETS := bin/dotproduct
 
 # Required flags
 CC := gcc
-CCFLAGS := -Wall -lpthread
+CCFLAGS := -Wall -lpthread -std=gnu11
 INCLUDES := -I./$(INCDIR)/
 #DEBUG := -D_DEBUG_
 DEBUG :=

@@ -26,11 +26,13 @@ int main(int argc, char * argv[])
   data.terms = totalTerms;
   // Serial
   dataTime serialTime;
+  printf("SERIAL\n");
   serialTime = estimatePiSerial(&data);
   calculateElapsedTime(&serialTime);
   dumpElapsedTime(&serialTime, "serial");
   dumpEstimatePi(&data, "serial");
   // Parallel
+  printf("Parallel\n");
   dataTime parallelTime;
   parallelTime = estimatePiThread(totalThreads, &data);
   calculateElapsedTime(&parallelTime);
