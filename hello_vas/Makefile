@@ -8,7 +8,8 @@ LIBDIR := lib
 PATHTOLIB := ../libmvas
 
 # Targets with main code inside
-TARGETS := bin/hello_vas
+#TARGETS := bin/hello_vas
+TARGETS := bin/simpleHelloVas
 
 # Required flags
 CC := gcc
