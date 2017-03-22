@@ -33,7 +33,7 @@ void dumpDotProductData(dotProductData * pInfo, char * pBaseName)
   writeMatrixToFile(bufferName, pInfo->finalVector, 1, pInfo->columns);
 }
 
-dotProductData * initDotProductData(int pLines, int pColumns)
+dotProductData * initDotProductData(const int pLines, const int pColumns)
 {
   dotProductData * info = (dotProductData *) calloc(1, sizeof(dotProductData));
   if (!info)
@@ -106,7 +106,7 @@ int cleanDotProductData(dotProductData * pInfo)
   return 0;
 }
 
-long * matrixGenerate(int pLines, int pColumns)
+long * matrixGenerate(const int pLines, const int pColumns)
 {
   if (pLines < 0 || pColumns < 0)
   {
@@ -130,7 +130,8 @@ long * matrixGenerate(int pLines, int pColumns)
   return matrix;
 }
 
-void writeMatrixToFile(char * pFile, long * pMatrix, int pLines, int pColumns)
+void writeMatrixToFile(const char * pFile, long * pMatrix, const int pLines,
+                       const int pColumns)
 {
   if (!pMatrix || pLines < 0 || pColumns < 0)
   {
@@ -172,7 +173,7 @@ void writeMatrixToFile(char * pFile, long * pMatrix, int pLines, int pColumns)
   fclose(saveTo);
 }
 
-int optionMatrixSize(int pOption)
+int optionMatrixSize(const int pOption)
 {
   switch(pOption)
   {
@@ -190,7 +191,7 @@ int optionMatrixSize(int pOption)
   return -1;
 }
 
-int optionTotalThreads(int pOption)
+int optionTotalThreads(const int pOption)
 {
   switch(pOption)
   {
@@ -206,4 +207,26 @@ int optionTotalThreads(int pOption)
       return 10;
   }
   return -1;
+}
+
+void printTestConfiguration(const int pOption)
+{
+  printf("CONFIGURATION:\n");
+  switch(pOption)
+  {
+    case CASE_10_5:
+      printf("Matrix size: 10x10\nTotal of threads: 5\n");
+      break;
+    case CASE_100_20:
+      printf("Matrix size: 100x100\nTotal of threads: 20\n");
+      break;
+    case CASE_1000_40:
+      printf("Matrix size: 1000x1000\nTotal of threads: 40\n");
+      break;
+    case CASE_10000_80:
+      printf("Matrix size: 10000x10000\nTotal of threads: 80\n");
+    default:
+      printf("(Default)\nMatrix size: 10x10\nTotal of threads: 10\n");
+      break;
+  }
 }

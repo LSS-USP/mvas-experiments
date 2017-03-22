@@ -15,13 +15,14 @@ extern void * matrixVectorKernel(void * pId);
 * @param pTotalThreads Total of threads to be created
 * @return Return a reference to array of pthread_t
 */
-extern pthread_t * initThreadData(int pTotalThreads);
+extern pthread_t * initThreadData(const int pTotalThreads);
 
 /**
 * Start matrix multiplication
 * @param pTotalThreads
 * @param pInfo
 */
-extern dataTime matrixVectorThread(int pTotalThreads, dotProductData * pInfo);
+extern dataTime matrixVectorThread(const int pTotalThreads,
+                                   dotProductData * pInfo);
 
 #endif

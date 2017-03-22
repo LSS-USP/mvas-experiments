@@ -90,7 +90,7 @@ int attachSegmentToVAS(vasAndSegment * pVasSegment)
 
 int playWithMvas(pid_t pPID, vasAndSegment * pVasSegment, int pValue)
 {
-  int status = vas_attach(pPID, pVasSegment->vas, S_IRWXU | S_IRWXG);
+  int status = vas_attach(pPID, pVasSegment->vas, S_IRWXU);
   if (status < 0)
   {
     printf("Cannot attach. Error: %s\n", strerror(errno));

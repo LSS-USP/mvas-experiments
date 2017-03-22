@@ -40,7 +40,7 @@ extern void dumpDotProductData(dotProductData * pInfo, char * pBaseName);
 * @param pColumns Total of columns
 * @return Return a reference to allocated data structure, otherwise return NULL
 */
-extern dotProductData * initDotProductData(int pLines, int pColumns);
+extern dotProductData * initDotProductData(const int pLines, const int pColumns);
 
 /**
 * Clean all previously allocated data
@@ -55,7 +55,7 @@ extern int cleanDotProductData(dotProductData * pInfo);
 * @param pColumns Number of columns
 * @return Return allocated matrix in memory, or null if something is wrong
 */
-extern long * matrixGenerate (int pLines, int pColumns);
+extern long * matrixGenerate (const int pLines, const int pColumns);
 
 /**
 * Write matrix to file
@@ -64,19 +64,21 @@ extern long * matrixGenerate (int pLines, int pColumns);
 * @param pLines Matrix lines
 * @param pColumns Matrix column
 */
-extern void writeMatrixToFile (char * pFile, long * pMatrix,
-                               int pLines, int pColumns);
+extern void writeMatrixToFile (const char * pFile, long * pMatrix,
+                               const int pLines, const int pColumns);
 
 /**
 * Option related to the matrix size
 * @param pOption Defined matrix size
 */
-extern int optionMatrixSize(int pOption);
+extern int optionMatrixSize(const int pOption);
 
 /**
 * Option related with the total of threads running
 * @param pOption defined total threads
 */
-extern int optionTotalThreads(int pOption);
+extern int optionTotalThreads(const int pOption);
+
+extern void printTestConfiguration(const int pOption);
 
 #endif

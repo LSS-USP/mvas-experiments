@@ -4,6 +4,7 @@
 #include "common.h"
 #include "serial.h"
 #include "parallelThread.h"
+#include "mvasParallelThread.h"
 
 int main(int argc, char * argv[])
 {
@@ -13,9 +14,13 @@ int main(int argc, char * argv[])
     return -1;
   }
 
+  // Argument defines matrix size and the total of threads. We hard coded those
+  // options
   int matrixCase = atoi(argv[1]);
   int matrixBase = optionMatrixSize(matrixCase);
 
+  // Info gona be the same for matrix, and vector for all tests. However, value
+  // will be override everytime
   dotProductData * info = initDotProductData(matrixBase, matrixBase);
   if (!info)
   {
@@ -23,8 +28,10 @@ int main(int argc, char * argv[])
     return -1;
   }
 
+  printTestConfiguration(matrixCase);
+
   // Serial
-  printf("SERIAL\n");
+  printf("SERIAL...\n");
   dataTime dataTimeSerial;
   dataTimeSerial = matrixVectorSerial(info);
   calculateElapsedTime(&dataTimeSerial);
@@ -32,13 +39,22 @@ int main(int argc, char * argv[])
   dumpElapsedTime(&dataTimeSerial, "serial");
 
   //Parallel
-  printf("PARALLEL\n");
+  printf("PARALLEL...\n");
   dataTime dataTimeParallel;
   int totalThreads = optionTotalThreads(matrixCase);
   dataTimeParallel = matrixVectorThread(totalThreads, info);
   calculateElapsedTime(&dataTimeParallel);
   dumpDotProductData(info, "parallel");
   dumpElapsedTime(&dataTimeParallel, "parallel");
+
+  //MVAS
+  printf("PARALLEL WITH VAS...\n");
+  dataTime mvasDataTimeParallel;
+  mvasDataTimeParallel = mvasMatrixVectorThread(totalThreads, info);
+  calculateElapsedTime(&mvasDataTimeParallel);
+  dumpDotProductData(info, "mvas-parallel");
+  dumpElapsedTime(&mvasDataTimeParallel, "mvas-parallel");
+
   cleanDotProductData(info);
 
   return 0;
