@@ -5,8 +5,8 @@
 #include <errno.h>
 #include <string.h>
 
-#include <vas.h>
-#include <segment.h>
+#include <mvas/vas.h>
+#include <mvas/segment.h>
 
 #define TOTAL_MVAS 3
 #define BUFFERSIZE 4096

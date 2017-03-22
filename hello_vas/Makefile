@@ -15,7 +15,7 @@ TARGETS := bin/simpleHelloVas
 CC := gcc
 CCFLAGS := -Wall -lpthread -std=gnu99
 INCLUDES := -I./$(INCDIR)/ -I./$(LIBDIR)/include/
-LIBMVAS := lib/libmvas
+LIBMVAS := -lmvas
 #DEBUG := -D_DEBUG_
 DEBUG :=
 
@@ -26,10 +26,10 @@ OBJFILES := $(basename $(subst $(SRCDIR),$(OBJDIR),$(SRCFILES)))
 all: prepare $(TARGETS)
 
 $(TARGETS): $(OBJFILES:%=%.o)
-	$(CC) $(CCFLAGS) $^ $(LIBMVAS) -o $@ $(DEBUG)
+	$(CC) $(CCFLAGS) $^ -o $@ $(DEBUG) $(LIBMVAS)
 
 $(OBJDIR)/%.o: $(basename $(subst $(OBJDIR),$(SRCDIR),$(OBJDIR)/%.o)).c
-	$(CC) -o $@ -c $< $(INCLUDES) $(CCFLAGS) $(DEBUG)
+	$(CC) -o $@ -c $< $(INCLUDES) $(CCFLAGS) $(DEBUG) $(LIBMVAS)
 
 .PHONY: clean, prepare
 
@@ -37,11 +37,7 @@ prepare:
 	mkdir -p $(BINDIR)
 	mkdir -p $(OBJDIR)
 	mkdir -p $(LIBDIR)/include
-	$(MAKE) -C $(PATHTOLIB)
-	cp $(PATHTOLIB)/lib/* lib/
-	cp $(PATHTOLIB)/include/* lib/include
 
 clean:
 	rm -rf $(BINDIR)/*
 	rm -rf $(OBJDIR)/*
-	rm -rf $(LIBDIR)/*
