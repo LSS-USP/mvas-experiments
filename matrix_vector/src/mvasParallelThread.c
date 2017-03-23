@@ -43,6 +43,7 @@ pthread_t * initMvasThreadData(int pTotalThreads)
     printf("It is required at least one thread\n");
     return NULL;
   }
+
   pthread_t * threadData = (pthread_t *)calloc(pTotalThreads,
                                                sizeof(pthread_t));
   if (!threadData)
@@ -58,7 +59,6 @@ pthread_t * initMvasThreadData(int pTotalThreads)
 vasInfo * mvasPoolInit(const int pTotalOfVas)
 {
   char name[64];
-  int status = 0;
 
   // Notice parentId have to be set before
   if (pTotalOfVas < 0 || parentId < 0)
@@ -77,7 +77,7 @@ vasInfo * mvasPoolInit(const int pTotalOfVas)
   for (int vasId = 0; vasId < pTotalOfVas; vasId++)
   {
     sprintf(name, "VAS%d", vasId);
-    vasPool[vasId].permissions = S_IRWXU;
+    vasPool[vasId].permissions = S_IRWXU | S_IRWXG;
     vasPool[vasId].name = strdup(name);
     bzero(name, sizeof(name));
 
@@ -87,13 +87,9 @@ vasInfo * mvasPoolInit(const int pTotalOfVas)
       return NULL;
     }
 
-    status = vas_attach(parentId, vasPool[vasId].id, S_IRWXU);
-    if (status < 0)
-    {
-      printf("Error on attach: %s\n", strerror(errno));
-      return NULL;
-    }
   }
+  //TODO: In the future, put attach to process here. See thread kernel with
+  // the explanation of the current workaround running
   return vasPool;
 }
 
@@ -105,14 +101,14 @@ void cleanMvas(vasInfo * pVasInfo, const int pTotalVas)
     status = vas_detach(parentId, pVasInfo[vas].id);
     if (status < 0)
     {
-      printf("Error on detach. %s\n", strerror(errno));
-      return;
+      printf("Error on detach VAS %d. %s\n", pVasInfo[vas].id, strerror(errno));
+      continue;
     }
     status = vas_delete(pVasInfo[vas].id);
     if (status < 0)
     {
-      printf("Error to delete. %s\n", strerror(errno));
-      return;
+      printf("Error to delete VAS %d. %s\n", pVasInfo[vas].id, strerror(errno));
+      continue;
     }
   }
   free(pVasInfo);
@@ -172,7 +168,6 @@ dataTime mvasMatrixVectorThread(const int pTotalThreads, dotProductData * pInfo)
     }
   }
   getEndTime(&threadTime);
-
   cleanMvas(poolOfVas, gTotalThreads);
 
   free(threadsData);
@@ -182,20 +177,40 @@ dataTime mvasMatrixVectorThread(const int pTotalThreads, dotProductData * pInfo)
 void * mvasMatrixVectorKernel(void * pId)
 {
   long localId = *((long*)pId);
+  int vasId = (int)localId + 1;
+
+  int status = 0;
   free(pId);
+  // XXX: workaround
+  // We should not need to sleep, in the future this gonna be correct.
+  unsigned int timeThread = localId;
+  long timeSleep = rand_r(&timeThread) % 999999999;
+  const struct timespec timeInterval = {1, timeSleep};
+  if (nanosleep(&timeInterval, NULL) < 0)
+  {
+    printf("Problem when try to sleep: %s\n", strerror(errno));
+  }
+
+  status = vas_attach(parentId, vasId, S_IRWXU | S_IRWXG);
+  if (status < 0)
+  {
+    printf("Error on attach: %s\n", strerror(errno));
+    return NULL;
+  }
+  // XXX: workaround
+
+  status = vas_switch(vasId);
+  if (status < 0)
+  {
+    printf("Thread kernel (%ld, %d): vas_switch %s\n", localId, vasId,
+           strerror(errno));
+    return NULL;
+  }
 
   int localToProcess = infoThread->lines / gTotalThreads;
   int startLine = localId * localToProcess;
   int endLine = (localId + 1) * localToProcess - 1;
-  int status = 0;
 
-  status = vas_switch((int)localId);
-  if (status < 0)
-  {
-    printf("Cannot attach vas: %s\n", strerror(errno));
-    return NULL;
-  }
-  // ***** VAS *****
   long tempElement = 0;
   for (int line = startLine; line <= endLine; line++)
   {
@@ -206,8 +221,7 @@ void * mvasMatrixVectorKernel(void * pId)
       infoThread->finalVector[line] += tempElement * infoThread->vector[column];
     }
   }
-  
-  // ***** VAS *****
+
   status = vas_switch(0);
   if (status < 0)
   {

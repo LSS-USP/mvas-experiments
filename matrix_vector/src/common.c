@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "common.h"
 #include "dataTime.h"
@@ -8,11 +13,33 @@
 void dumpDotProductData(dotProductData * pInfo, char * pBaseName)
 {
   char bufferName[BUFFER];
+  DIR * resultDir = NULL;
+  char * resultPath = "./results/";
+
+  if (access(resultPath, F_OK ) != -1 )
+  {
+    if ((resultDir = opendir (resultPath)) == NULL)
+    {
+      printf("We had any problem with result dir\n");
+    }
+  }
+  else
+  {
+    printf("Dir no exist. Create it...\n");
+    if (mkdir(resultPath, 0770) < 0)
+    {
+      printf("Error on mkdir\n");
+      return;
+    }
+  }
+
+  strcpy(bufferName, resultPath);
 
   #ifdef _DEBUG_
   printf("Matrix\n");
   #endif
-  strcpy(bufferName, pBaseName);
+  strcpy(bufferName, resultPath);
+  strcat(bufferName, pBaseName);
   strcat(bufferName, "_matrix.csv");
   writeMatrixToFile(bufferName, pInfo->matrix, pInfo->lines, pInfo->columns);
 
@@ -20,7 +47,8 @@ void dumpDotProductData(dotProductData * pInfo, char * pBaseName)
   printf("Vector\n");
   #endif
 
-  strcpy(bufferName, pBaseName);
+  strcpy(bufferName, resultPath);
+  strcat(bufferName, pBaseName);
   strcat(bufferName, "_vector.csv");
   writeMatrixToFile(bufferName, pInfo->vector, 1, pInfo->columns);
 
@@ -28,7 +56,8 @@ void dumpDotProductData(dotProductData * pInfo, char * pBaseName)
   printf("Result\n");
   #endif
 
-  strcpy(bufferName, pBaseName);
+  strcpy(bufferName, resultPath);
+  strcat(bufferName, pBaseName);
   strcat(bufferName, "_result.csv");
   writeMatrixToFile(bufferName, pInfo->finalVector, 1, pInfo->columns);
 }
@@ -211,22 +240,22 @@ int optionTotalThreads(const int pOption)
 
 void printTestConfiguration(const int pOption)
 {
-  printf("CONFIGURATION:\n");
+  printf("\nCONFIGURATION:\n");
   switch(pOption)
   {
     case CASE_10_5:
-      printf("Matrix size: 10x10\nTotal of threads: 5\n");
+      printf("Matrix size: 10x10\nTotal of threads: 5\n\n");
       break;
     case CASE_100_20:
-      printf("Matrix size: 100x100\nTotal of threads: 20\n");
+      printf("Matrix size: 100x100\nTotal of threads: 20\n\n");
       break;
     case CASE_1000_40:
-      printf("Matrix size: 1000x1000\nTotal of threads: 40\n");
+      printf("Matrix size: 1000x1000\nTotal of threads: 40\n\n");
       break;
     case CASE_10000_80:
-      printf("Matrix size: 10000x10000\nTotal of threads: 80\n");
+      printf("Matrix size: 10000x10000\nTotal of threads: 80\n\n");
     default:
-      printf("(Default)\nMatrix size: 10x10\nTotal of threads: 10\n");
+      printf("(Default)\nMatrix size: 10x10\nTotal of threads: 10\n\n");
       break;
   }
 }

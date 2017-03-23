@@ -11,6 +11,8 @@ int main(int argc, char * argv[])
   if (argc != 2)
   {
     printf("Error in the program execution\n");
+    printf("\nParameters (Matrix Size [thread]):\n\t0 - 10x10 [5]\n\t"\
+           "1 - 100x100 [20]\n\t2 - 1000x1000 [40]\n\t3 - 10000x10000 [80]\n");
     return -1;
   }
 
@@ -29,26 +31,26 @@ int main(int argc, char * argv[])
   }
 
   printTestConfiguration(matrixCase);
+  int totalThreads = optionTotalThreads(matrixCase);
 
   // Serial
-  printf("SERIAL...\n");
+  printf("\nSERIAL...\n");
   dataTime dataTimeSerial;
   dataTimeSerial = matrixVectorSerial(info);
   calculateElapsedTime(&dataTimeSerial);
   dumpDotProductData(info, "serial");
   dumpElapsedTime(&dataTimeSerial, "serial");
 
-  //Parallel
-  printf("PARALLEL...\n");
+  // Parallel
+  printf("\nPARALLEL...\n");
   dataTime dataTimeParallel;
-  int totalThreads = optionTotalThreads(matrixCase);
   dataTimeParallel = matrixVectorThread(totalThreads, info);
   calculateElapsedTime(&dataTimeParallel);
   dumpDotProductData(info, "parallel");
   dumpElapsedTime(&dataTimeParallel, "parallel");
 
-  //MVAS
-  printf("PARALLEL WITH VAS...\n");
+  // MVAS
+  printf("\nPARALLEL WITH VAS...\n");
   dataTime mvasDataTimeParallel;
   mvasDataTimeParallel = mvasMatrixVectorThread(totalThreads, info);
   calculateElapsedTime(&mvasDataTimeParallel);
