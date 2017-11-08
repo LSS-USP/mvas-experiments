@@ -13,18 +13,22 @@ static int children;
 
 void handle_signal(int sig)
 {
-	int index = 0;
+	int index = 0, i = 0, ret = 0;
 
 	srand(time(NULL));
 	index = rand() % children;
 #ifdef _VERBOSE_
 	printf("handle_signal: catch: %d\n", sig);
 #endif
-	if (sig == SIGTERM) {
-		byebye = 1;
+	if (sig == SIGTERM || sig == SIGINT) {
 #ifdef _VERBOSE_
 		printf("SIGTERM RECEIVED: BYEBYE\n");
 #endif
+		for (i = 0; i < children; i++) {
+			ret = kill(children_list[i], SIGTERM);
+			if (ret < 0)
+				perror("SIGTERM to child");
+		}
 		exit(1);
 	}
 
