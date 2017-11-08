@@ -33,15 +33,16 @@ int main(int argc, char ** argv)
 		exit(1);
 	}
 
-	ret = initialize_children(&action);
+	ret = start_server(&action);
 	if (ret == -1) {
 		perror("initialize_children()");
 		exit(1);
 	}
+
 	printf("Processes available for handling requests:\n");
 	for(i = 0; i < action.children; i++)
 		printf("%d: %d\n", i, action.children_list[i]);
-
+	printf("READY\n");
 	for(;;) {
 		// App main loop
 		pause();

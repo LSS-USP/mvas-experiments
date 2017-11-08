@@ -17,21 +17,29 @@ void handle_signal(int sig)
 
 	srand(time(NULL));
 	index = rand() % children;
-
-	printf("handle_signal catch: %d\n", sig);
-	
+#ifdef _VERBOSE_
+	printf("handle_signal: catch: %d\n", sig);
+#endif
 	if (sig == SIGTERM) {
 		byebye = 1;
-		printf("SIGTERM RECEIVED AND BYEBYE\n");
+#ifdef _VERBOSE_
+		printf("SIGTERM RECEIVED: BYEBYE\n");
+#endif
 		exit(1);
 	}
 
 	// Wake up a process
 	if (sig == SIGUSR1) {
-		printf("Hey, I toke my decision-> WAKE UP CHILD: %d\n",
+#ifdef _VERBOSE_
+		printf("WAKE UP CHILD (PID %d): %d\n", getpid(),
 			children_list[index]);
+#endif
 		if (children_list[index] > 0)
-			kill(children_list[index], SIGUSR1);
+			kill(children_list[index], SIGCONT);
+	}
+
+	if (sig == SIGCONT) {
+		printf("Just for child");
 	}
 }
 
@@ -55,10 +63,14 @@ int initialize_simulation(struct sigaction *s)
 	if (ret == -1)
 		return ret;
 
+	ret = sigaction(SIGCONT, s, NULL);
+	if (ret == -1)
+		return ret;
+
 	return ret;
 }
 
-int initialize_children(struct action_info *a)
+int start_server(struct action_info *a)
 {
 	int i = 0;
 
@@ -78,22 +90,36 @@ int initialize_children(struct action_info *a)
 		a->children_list[i] = main_child();
 	}
 
+	signal(SIGCONT, SIG_DFL);
+
 	return 0;
 }
 
 pid_t main_child(void)
 {
 	pid_t pid;
+	struct measurement_data m;
 
 	pid = fork();
-	if (!pid){
-		//Child should wait
+	if (!pid) {
+		signal(SIGINT, SIG_DFL);
+		signal(SIGUSR1, SIG_DFL);
+		signal(SIGTERM, SIG_DFL);
+#ifdef _VERBOSE_
 		printf("Children created and stopped\n");
+#endif
+		//Request processing
 		while(1) {
 			pause();
-			printf("Child received any signal to continue\n");
+			get_begin_time(&m);
+#ifdef _VERBOSE_
+			printf("--> Child %d will handle the request\n", getpid());
+#endif
 			if (byebye)
 				break;
+			get_end_time(&m);
+			calculate_elapsed_time(&m);
+			//dump_elapsed_time(&m, "...");
 		}
 		exit(0);
 	}
