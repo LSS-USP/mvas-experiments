@@ -5,6 +5,7 @@
 #include <time.h>
 
 #include "action.h"
+#include "data_measurement.h"
 
 static int byebye = 0;
 static pid_t *children_list;
