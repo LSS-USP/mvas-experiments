@@ -13,6 +13,7 @@ CCFLAGS := -Wall -lpthread -std=gnu11
 INCLUDES := -I./$(INCDIR)/
 #DEBUG := -D_DEBUG_
 DEBUG :=
+VERBOSE := -D_VERBOSE_
 #LIBVAS := -lmvas
 
 # Files to process
@@ -22,10 +23,10 @@ OBJFILES := $(basename $(subst $(SRCDIR),$(OBJDIR),$(SRCFILES)))
 all: prepare $(TARGETS)
 
 $(TARGETS): $(OBJFILES:%=%.o)
-	$(CC) $(CCFLAGS) $^ -o $@ $(DEBUG) $(LIBVAS)
+	$(CC) $(CCFLAGS) $^ -o $@ $(DEBUG) $(VERBOSE) $(LIBVAS)
 
 $(OBJDIR)/%.o: $(basename $(subst $(OBJDIR),$(SRCDIR),$(OBJDIR)/%.o)).c
-	$(CC) -o $@ -c $< $(INCLUDES) $(CCFLAGS) $(DEBUG) $(LIBVAS)
+	$(CC) -o $@ -c $< $(INCLUDES) $(CCFLAGS) $(DEBUG) $(VERBOSE) $(LIBVAS)
 
 .PHONY: clean, prepare
 
