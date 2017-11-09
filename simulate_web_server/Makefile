@@ -14,19 +14,25 @@ INCLUDES := -I./$(INCDIR)/
 #DEBUG := -D_DEBUG_
 DEBUG :=
 VERBOSE := -D_VERBOSE_
-#LIBVAS := -lmvas
+MVAS_ENABLED := -D_MVAS_
+LIBVAS := -lmvas
 
 # Files to process
 SRCFILES := $(shell find -name '*.c' -printf '%P ')
 OBJFILES := $(basename $(subst $(SRCDIR),$(OBJDIR),$(SRCFILES)))
 
-all: prepare $(TARGETS)
+all: prepare mvas
+
+nothing: prepare $(TARGETS)
+
+mvas: $(OBJFILES:%=%.o)
+	$(CC) $(CCFLAGS) $^ -o $(TARGETS) $(DEBUG) $(VERBOSE) $(MVAS_ENABLED) $(LIBVAS)
 
 $(TARGETS): $(OBJFILES:%=%.o)
-	$(CC) $(CCFLAGS) $^ -o $@ $(DEBUG) $(VERBOSE) $(LIBVAS)
+	$(CC) $(CCFLAGS) $^ -o $@ $(DEBUG) $(VERBOSE)
 
 $(OBJDIR)/%.o: $(basename $(subst $(OBJDIR),$(SRCDIR),$(OBJDIR)/%.o)).c
-	$(CC) -o $@ -c $< $(INCLUDES) $(CCFLAGS) $(DEBUG) $(VERBOSE) $(LIBVAS)
+	$(CC) -o $@ -c $< $(INCLUDES) $(CCFLAGS) $(DEBUG) $(VERBOSE) $(LIBVAS) $(MVAS_ENABLED)
 
 .PHONY: clean, prepare
 

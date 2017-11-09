@@ -3,11 +3,13 @@
 #include <signal.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/stat.h>
+#include <mvas/vas.h>
 
 #include "action.h"
 #include "data_measurement.h"
+#include "mvas_isolation.h"
 
-static int byebye = 0;
 static pid_t *children_list;
 static int children;
 
@@ -99,6 +101,48 @@ int start_server(struct action_info *a)
 	return 0;
 }
 
+static void do_something(void)
+{
+	printf("+++> do_something\n");
+#ifdef _MVAS_
+	int rc = 0;
+	mode_t mode = S_IRWXU | S_IRWXG;
+	vasid_t vas_id = 0;
+
+	printf("+++> do_something: MVAS\n");
+
+	// Turn on VAS
+	vas_id = create_isolate_vas("VAS_TEST", mode);
+	if (vas_id < 0) {
+		printf("Error to create isolate vas\n");
+	} else {
+		rc = vas_attach(0, vas_id, mode);
+		if (rc >= 0) {
+			rc = vas_switch(vas_id);
+			if (rc < 0)
+				printf("Error to switch vas\n");
+		}
+	}
+
+	printf("==== Heyyyyy, I am inside the mvas ===");
+
+	// Turn of VAS
+	if (vas_id >= 0) {
+		rc = vas_switch(0);
+		if (rc < 0)
+			printf("Error to switch back vas\n");
+
+		rc = vas_detach(0, vas_id);
+		if (rc < 0)
+	printf("Error to detach vas\n");
+
+		rc = vas_delete(vas_id);
+		if (rc < 0)
+			printf("Error to delete vas\n");
+	}
+#endif
+}
+
 pid_t main_child(void)
 {
 	pid_t pid;
@@ -119,8 +163,7 @@ pid_t main_child(void)
 #ifdef _VERBOSE_
 			printf("--> Child %d will handle the request\n", getpid());
 #endif
-			if (byebye)
-				break;
+			do_something();
 			get_end_time(&m);
 			calculate_elapsed_time(&m);
 			//dump_elapsed_time(&m, "...");
