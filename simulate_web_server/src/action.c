@@ -101,9 +101,9 @@ int start_server(struct action_info *a)
 	return 0;
 }
 
-static void do_something(void)
+static void do_something(void *data, unsigned int size)
 {
-	printf("+++> do_something\n");
+	printf("+++> do_something> %s\n", (char*)data);
 #ifdef _MVAS_
 	int rc = 0;
 	mode_t mode = S_IRWXU | S_IRWXG;
@@ -112,7 +112,7 @@ static void do_something(void)
 	printf("+++> do_something: MVAS\n");
 
 	// Turn on VAS
-	vas_id = create_isolate_vas("VAS_TEST", mode);
+	vas_id = create_isolate_vas((char*)data, mode);
 	if (vas_id < 0) {
 		printf("Error to create isolate vas\n");
 	} else {
@@ -134,7 +134,7 @@ static void do_something(void)
 
 		rc = vas_detach(0, vas_id);
 		if (rc < 0)
-	printf("Error to detach vas\n");
+			printf("Error to detach vas\n");
 
 		rc = vas_delete(vas_id);
 		if (rc < 0)
@@ -147,12 +147,14 @@ pid_t main_child(void)
 {
 	pid_t pid;
 	struct measurement_data m;
+	char buf[256];
 
 	pid = fork();
 	if (!pid) {
 		signal(SIGINT, SIG_DFL);
 		signal(SIGUSR1, SIG_DFL);
 		signal(SIGTERM, SIG_DFL);
+		sprintf(buf, "%d", getpid());
 #ifdef _VERBOSE_
 		printf("Children created and stopped\n");
 #endif
@@ -163,7 +165,7 @@ pid_t main_child(void)
 #ifdef _VERBOSE_
 			printf("--> Child %d will handle the request\n", getpid());
 #endif
-			do_something();
+			do_something(buf, sizeof(buf));
 			get_end_time(&m);
 			calculate_elapsed_time(&m);
 			//dump_elapsed_time(&m, "...");

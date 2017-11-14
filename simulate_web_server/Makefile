@@ -21,6 +21,9 @@ LIBVAS := -lmvas
 SRCFILES := $(shell find -name '*.c' -printf '%P ')
 OBJFILES := $(basename $(subst $(SRCDIR),$(OBJDIR),$(SRCFILES)))
 
+mvas: MVAS_ENABLED = -D_MVAS_
+nothing: MVAS_ENABLED =
+
 all: prepare mvas
 
 nothing: prepare $(TARGETS)
